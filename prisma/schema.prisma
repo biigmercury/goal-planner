@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskStatus {
+  TODO
+  DONE
+  SKIPPED
+}
+
+model Goal {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  startDate     DateTime
+  deadline      DateTime
+  minutesPerDay Int
+  // Comma-separated JS day numbers (0=Sun .. 6=Sat)
+  availableDays String
+  // "HH:MM" 24h format
+  reminderTime  String
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  milestones    Milestone[]
+  tasks         Task[]
+}
+
+model Milestone {
+  id        String   @id @default(cuid())
+  goalId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+
+  tasks     Task[]
+
+  @@index([goalId])
+}
+
+model Task {
+  id              String     @id @default(cuid())
+  goalId          String
+  milestoneId     String?
+
+  goal            Goal       @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  milestone       Milestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+
+  title           String
+  details         String?
+  estimatedMinutes Int
+  // Stored as midnight local-ish; we treat date portion only
+  scheduledDate   DateTime
+  status          TaskStatus @default(TODO)
+  order           Int        @default(0)
+
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@index([goalId, scheduledDate])
+  @@index([milestoneId])
+}
