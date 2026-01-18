@@ -9,9 +9,8 @@
     "lint": "eslint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
     "vercel-build": "prisma generate && next build"
-
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
